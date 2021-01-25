@@ -41,3 +41,36 @@ jobs:
           path: ./*
           key: ${{ github.sha }}
       - run: ls .next
+
+  artifact-build:
+    name: Build - With Artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-artifact@v2
+        with:
+          name: nextjs-build
+          path: ./.next
+
+  artifact-use-build:
+    name: Re-use Cache
+    runs-on: ubuntu-latest
+    needs: [artifact-build]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/download-artifact@v2
+        with:
+          name: nextjs-build
+      - run: ls .next
